@@ -1,0 +1,28 @@
+deepnet
+=======
+
+Deep neural network implemented with gnumpy/cudamat
+
+How to install GPU files for Windows:
+1. Download and install CUDA toolkit (tested with CUDA 5.0)
+2. Download and install the GPU Computing SDK
+3. Download and install GNU make for windows: GNUwin32; add the paths to your path environmental variable
+4. Download and install Visual studio 2010 for its compilers and add the paths to your path environmental variable
+5. Download and install MinGW; add the paths to your path environmental variable
+6. Proceed with cudamat installation instructions
+
+Windows modules for 64-bit can be found here:
+http://www.lfd.uci.edu/~gohlke/pythonlibs/
+Windows modules in 32-bit can be easily downloaded and installed via pip:
+http://stackoverflow.com/questions/4750806/how-to-install-pip-on-windows
+
+Remember that 32 bit python on windows has a 4GB memory limit and thus might limit the things you can run on your GPU.
+64bit modules often can cause problems though, so stick with the modules from Christoph Gohlke if you go with 64 bit.
+
+How to install GPU files for Linux:
+1. Install the CUDA toolkit – this can be problematic on some versions of Linux/some types of GPUs; 
+   if you run into problems you will find detailed solutions online
+2. Follow cudamat installation instructions
+3. Adjust file paths in the files
+
+You can easily find instructions for how to install other requirements via google
