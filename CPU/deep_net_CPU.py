@@ -9,13 +9,72 @@ import logging as log
 import copy
 from scipy import sparse
 from sklearn import metrics
-from RBM_CPU import RBM
+from gnumpy_RBM import RBM
 from SDA import SDA
 import operator
 import time
 
-
+log.basicConfig(filename='C:/net/log_CPU.txt', format='%(message)s', level=log.DEBUG)
 class Deep_net:
+    ''' How to use this deep net:
+    1. Load data into an array: data = [train + cv data without labels, labels for train and cv data, test set without labels ]
+       If your train and cv set is seperate stack it and use it as the arrays first element
+    2. Set the train, cross validation and test set size (this test set has labels and is different from the test set above) by setting 
+       the set_sizes variable: e.g. set_sizes = [0.8, 0.2, 0] for 80 % train set and 20 % cross validation set; 
+       you need to shuffle set before if you want randomize the samples
+    3. What kind of problem do you use the net on? 
+       problem = 'classification' will use logistic units, softmax and will print misclassification error
+       problem = 'regression' will use rectified linear units, linear unit and will print root mean squared error
+       If you need probabilities with regression, make sure to set clip_values = 1 to clip the values into a probability
+       
+    In case of the other parameters do this:      
+    
+    learning_rate            Sets the initial learning rate of the net.
+    dropout = [0.2,0.5]      Optimize with cross validation score.
+    cost = 'auc'             Set to 'auc' for auc score instead of other errors.
+    self.epochs = 50         Set how long you want to run the neural network.  
+    is_sparse = False        Set to true for sparse data sets.
+    printing = True          Set this to false, so that it is not longer printed to the console;
+                             however, logging into the file continues.
+    pretraining_weights = [] Set this to an array of weights [[W1, B1], [W2,B2], ...., [Wn,Bn]] where W is a weight and B a bias.
+    pretraining =True        Set this to true to pretrain on test + train data; currently only works for image data.
+    gpu_data = False         Set this to false so that the data is not allocated to the GPU. Instead, only every batch is allocated then.
+                             This slows down training, but if you run into memory problems due to large data sets or large networks you need 
+                             to do this.
+    ids = []                 IDs for the cvs file (useful for Kaggle competitions)
+    comment = 'test 123'     Logs a comment; useful if you run many neural nets and want to keep track of 
+                             all your different experiments and their parameters.
+    save_weights = True      Set this to true, to save all weights whenever predictions are made
+    time_printing = True     For every epoch, this prints how long the net needs for each step in training; useful to speed up the net for your problem
+    file_id = 'crowdflower'  Adds the string to the file name for the preditions so that you do not confuse them
+    stop_at_score = 0.14     If you train with a full trainset (i.e. set_sizes = [1,0,0]) this is useful to stop at the right time the get the best error.
+                             Usually you use it like this:
+                             1. Optimize cross validation score
+                             2. Get the train error for the best cross validation score
+                             3. stop_at_score = train_error for best cross validation score
+                             4. run your net with set_sizes = [1,0,0] to train on the full set and stop at the right moment
+    
+    
+        
+    Most other parameters can be tweaked inside the constructor (__init__):
+    self.batch_size = 100        A batch size of 100 is most often fine; if your data set is not very redundant you want to increase this
+    
+    self.learning_rate = 0.1     If your error increases steadily after some time, you need to lower this,
+                                 otherwise you can increase this to make the net learn faster. 
+                                 However, lower learning rates often yield better performance                                     
+    
+    self.momentum = 0.5          This is often fine for all different kind of problems; you can increase this a bit to speed up learning
+    
+    self.transition = 70         This has to be the epoch at which the cross validation error no longer increases. 
+                                 At that epoch the learning rate will begin to decrease linearly and dropout is halfed
+    self.end_momentum = 0.95     You can increase this to make the net learn faster after a while; too high values lead to 
+                                 oscillations.
+    self.L2 = 0                  Add a L2 penalty to the cost function; often not needed when one uses dropout, but can improve results;
+                                 reduces extreme differences between weights, all weights are similar
+    self.L1 = 0                  Add a L1 penalty to the cost function; often not needed when one uses dropout, but can improve results;
+                                 makes the weights sparse, i.e. only important weights will have a value bigger than zero
+    self.clip_values = 1         Bring the output values into the [0,1] probability range
+    '''
     
     def __init__(self, hidden_sizes, cost = None, dropout = [0.2,0.5], set_sizes = [0.8,0.2,0], epochs = 500, is_sparse = False,
                  problem = 'classification',  data = None, printing = True,
@@ -269,7 +328,8 @@ class Deep_net:
         for epoch in range(self.epochs):
             self.begin_of_epoch(epoch)
             for set_name in self.set_names:
-                for start_idx in range(0,self.X.shape[0],self.batch_size):             
+                for start_idx in range(0,self.X.shape[0],self.batch_size):  
+                    print 'batch', start_idx           
                     if self.allocate_batch(start_idx, set_name):
                         break                
                     
