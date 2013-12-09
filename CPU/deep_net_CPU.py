@@ -74,6 +74,9 @@ class Deep_net:
     self.L1 = 0                  Add a L1 penalty to the cost function; often not needed when one uses dropout, but can improve results;
                                  makes the weights sparse, i.e. only important weights will have a value bigger than zero
     self.clip_values = 1         Bring the output values into the [0,1] probability range
+	
+	Do you encounter any problems?
+	Contact me under: Tim.dettmers@gmail.com
     '''
     
     def __init__(self, hidden_sizes, cost = None, dropout = [0.2,0.5], set_sizes = [0.8,0.2,0], epochs = 500, is_sparse = False,
