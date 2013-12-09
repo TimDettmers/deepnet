@@ -19,4 +19,4 @@ How to install GPU files for Linux:
 2. Follow cudamat installation instructions
 3. Adjust file paths in the files
 
-You can easily find instructions for how to install other requirements on Linux via google
+You can easily find instructions for how to install other requirements  via google
